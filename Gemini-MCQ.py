@@ -72,35 +72,12 @@ def generate_mcqs():
     Content: {transcript_data['text']}
     """
 
-
-#    prompt = f"""
-#        Based on the following content, generate 1 multiple-choice question.
-#        The question should have 4 options and one clearly correct answer.
-#        The question should indicate the reason of the CT scan and ask for the most likely diagnosis. Don't include any more details about the patient or clinical presentation in the question.
-#        The options shouble be different potential diagnosis discussed in the content. The correct answer should indicate the most likely diagnosis that is revealed in the following content.
-#        Format the output as a JSON list of objects, each containing:
-#        "question", "options" (as a list), and "answer".
-       
-#        Content: {transcript_data['text']}
-#        """
-
     response = client.models.generate_content(
         model="gemini-3.5-flash",
         contents=prompt
     )
     return response.text
 
-    # message = claude_client.messages.create(
-    # model="claude-opus-4-8",
-    # max_tokens=1000,
-    # messages=[
-    #     {
-    #         "role": "user",
-    #         "content": prompt,
-    #     }
-    # ],
-    # )
-    # return message.content[0].text
 
 
 
