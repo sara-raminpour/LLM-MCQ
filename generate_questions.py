@@ -2,10 +2,8 @@
 from google import genai
 import time
 import json
-# from PIL import Image
 import os
 from dotenv import load_dotenv
-# from google.genai import types
 import argparse
 
 load_dotenv()
@@ -13,9 +11,6 @@ load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-
-
-# video_filename = "March-25/case_conference_march_25_1.mp4"
 
 def wait_for_active(client, file_name):
     while True:
