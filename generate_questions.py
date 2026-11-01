@@ -2,11 +2,11 @@
 from google import genai
 import time
 import json
-from PIL import Image
+# from PIL import Image
 import os
 from dotenv import load_dotenv
-from google.genai import types
-
+# from google.genai import types
+import argparse
 
 load_dotenv()
 
@@ -15,7 +15,7 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 
 
-video_filename = "March-25/case_conference_march_25_11.mp4"
+# video_filename = "March-25/case_conference_march_25_1.mp4"
 
 def wait_for_active(client, file_name):
     while True:
@@ -26,18 +26,19 @@ def wait_for_active(client, file_name):
             raise RuntimeError("File processing failed")
         time.sleep(2)
 
+def generate_transcript(video_filename):
+    uploaded = client.files.upload(file=video_filename)
+    file_obj = wait_for_active(client, uploaded.name)
 
-uploaded = client.files.upload(file=video_filename)
-file_obj = wait_for_active(client, uploaded.name)
+    transcription = client.models.generate_content(
+        model="gemini-3.5-flash", 
+            contents=[file_obj,"Transcribe the audio in the video into text."])
 
-transcription = client.models.generate_content(
-    model="gemini-3.5-flash", 
-          contents=[file_obj,"Transcribe the audio in the video into text."])
-
-transcript_text = transcription.text.strip()
+    return transcription.text.strip()
 
 
-def generate_mcqs():
+
+def generate_mcqs(transcript_text):
 
     prompt = f"""
     Based on the following content, generate 1 multiple-choice question.
@@ -61,6 +62,31 @@ def generate_mcqs():
     return response.text
 
 
+def main(video_filename: str):
+    
+    transcript_text = generate_transcript(video_filename)
+    mcqs = generate_mcqs(transcript_text)
+    print(mcqs)
+    text = mcqs.strip()
+    if text.startswith("```json"):
+        text = text.removeprefix("```json")
 
-mcqs = generate_mcqs()
-print(mcqs)
+    if text.startswith("```"):
+        text = text.removeprefix("```")
+
+    if text.endswith("```"):
+        text = text.removesuffix("```")
+
+    text = text.strip()
+
+    data = json.loads(text)
+
+    dx = data[0]['answer']
+    return dx
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="generating MCQ from video transcripts.")
+    parser.add_argument('video_filename', type=str, help='Path to the video file')
+    
+    args = parser.parse_args()
+    main(args.video_filename)
